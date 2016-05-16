@@ -2,11 +2,8 @@ package com.yu;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -55,7 +52,7 @@ public class DeviceReportList extends Listing <Report> {
 		System.out.println("Ent from resp: " + response.readEntity(String.class));
 		ReportResponse resp = JsonContext.mapper.readValue(RespStr, ReportResponse.class);
 		System.out.println("response.status: " + resp.status);
-		elementQueue = new LinkedList<Report>();
+		//elementQueue = new LinkedList<Report>();
 		for (Report rpt : resp.data) {
 			elementQueue.add(rpt);
 		}
@@ -88,7 +85,7 @@ public class DeviceReportList extends Listing <Report> {
 			String distance = "Lat*Lon: " + distanceLat + "*" + distanceLon;
 			wr.write("Geohash: " + geo + " latSize: " + box.getLatitudeSize() + " lonSize: " + box.getLongitudeSize()
 					+ " Distance M: " + distance + '\n');
-			trkg.addReport(rpt.u_latitude, rpt.u_longitude, iso.parseTime(rpt.dateAcquired));
+			trkg.addReport(rpt.u_latitude, rpt.u_longitude, rpt.u_locationType, iso.parseTime(rpt.dateAcquired));
 
 			// break;
 			// System.out.print(rpt.dateAcquired);

@@ -5,7 +5,16 @@ public class Passage {
 	private long firstTime;
 	private long lastTime;
 	private int durationMin;
+	private int distanceFromLast;
 	
+	public int getDistanceFromLast() {
+		return distanceFromLast;
+	}
+
+	public void setDistanceFromLast(int distanceFromLast) {
+		this.distanceFromLast = distanceFromLast;
+	}
+
 	public int getDurationMin() {
 		return durationMin;
 	}
@@ -31,7 +40,7 @@ public class Passage {
 
 	@Override
 	public String toString() {
-		return geoHash.toString() + ": lastTime (sec)=" + lastTime/1000 + " durationMin=" + durationMin;
+		return geoHash.toString() + ": lastTime (sec)=" + lastTime/1000 + " durationMin=" + durationMin + " dist: " + distanceFromLast;
 	}
 
 }

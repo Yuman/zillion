@@ -44,9 +44,9 @@ public class ShipmentDetail implements WsClient{
 		params.add("_t", System.currentTimeMillis());
 		params.add("shipmentIdType", 1);
 		params.addPath("id", shipmentId);
-		target = params.addToTarget(targetRoot);
-		System.out.println(target);
+		target = params.addToTarget(targetRoot);		
 		target = target.queryParam("sign", params.sign("GET"));
+		System.out.println(target);
 		String RespStr = target.request(MediaType.TEXT_PLAIN_TYPE).get(String.class);
 		System.out.println(RespStr);
 		Response response = target.request(MediaType.TEXT_PLAIN_TYPE).get();
@@ -59,8 +59,9 @@ public class ShipmentDetail implements WsClient{
 
 	public static void main(String[] args) throws Exception {
 		int counter = 0;
-		Writer wr = new PrintWriter("/tmp/shipment" + 10592 + ".txt");
-		ShipmentDetail rpt = new ShipmentDetail("10592");
+		Writer wr = new PrintWriter("/tmp/shipment" + 10297 + ".txt");
+		// 10281, 10297, 10298, 10299, 10300, 10301, 10302, 10303, 10364
+		ShipmentDetail rpt = new ShipmentDetail("10297");
 		rpt.getReport();
 		Iso8601Util iso = new Iso8601Util();
 

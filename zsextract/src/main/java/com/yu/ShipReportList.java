@@ -23,16 +23,16 @@ import ch.hsr.geohash.GeoHash;
 import ch.hsr.geohash.WGS84Point;
 import ch.hsr.geohash.util.VincentyGeodesy;
 
-public class ShipReportList extends Listing <Report>{
+public class ShipReportList extends Listing<Report> {
 	String PATH = "v1/shipments/reportdata";
 	WebTarget targetRoot = client.target(ZsConfig.URL).path(PATH);
 	WebTarget target = null;
 	Shipment shp;
-	String lastDateAcquired = (new Iso8601Util()).back(-1);
+	Iso8601Util iso = new Iso8601Util();
 
 	public ShipReportList(Shipment sh) throws Exception {
 		super();
-		shp = sh;		
+		shp = sh;
 		getList();
 	}
 
@@ -45,49 +45,60 @@ public class ShipReportList extends Listing <Report>{
 		params.add("id", shp.id);
 		params.add("begindate", lastDateAcquired);
 		// params.add("enddate", dvc.id);
-		target = params.addToTarget(targetRoot);		
+		target = params.addToTarget(targetRoot);
 		target = target.queryParam("sign", params.sign("GET"));
 		System.out.println(target);
 		String RespStr = target.request(MediaType.TEXT_PLAIN_TYPE).get(String.class);
-		System.out.println(RespStr);
-		Response response = target.request(MediaType.TEXT_PLAIN_TYPE).get();
-		System.out.println("response: " + response);
-		System.out.println("Ent from resp: " + response.readEntity(String.class));
+		// System.out.println(RespStr);
+		// Response response = target.request(MediaType.TEXT_PLAIN_TYPE).get();
+		// System.out.println("response: " + response);
+		// System.out.println("Ent from resp: " +
+		// response.readEntity(String.class));
 		ReportResponse resp = JsonContext.mapper.readValue(RespStr, ReportResponse.class);
-		System.out.println("response.status: " + resp.status);
-		elementQueue = new LinkedList<Report>();
+		rowsFetched = resp.data.size();
+		System.out.println("response.status: " + resp.status + " Rows:" + resp.rows + " offset:" + resp.offset
+				+ " total:" + resp.totalCount + " rowsFetched: " + rowsFetched);
 		for (Report rpt : resp.data) {
 			elementQueue.add(rpt);
 		}
-		if (elementQueue.peekLast() != null) {
-			lastDateAcquired = elementQueue.peekLast().dateAcquired;
+		if (elementQueue.peekLast() != null) {			
+			lastDateAcquired = iso.format(iso.parseTime(elementQueue.peekLast().dateAcquired)+ 60000);
 		}
 	}
 
 	public static void main(String[] args) throws Exception {
 		int counter = 0;
 		Shipment shp = new Shipment();
-		shp.id = "10592";
-		Writer wr = new PrintWriter("/tmp/shipment" + 10592 + ".txt");
+		// 10281, 10297, 10298, 10299, 10300, 10301, 10302, 10303, 10364
+		shp.id = "10297";
+		Writer wr = new PrintWriter("/tmp/shipment" + shp.id + ".txt");
 		ShipReportList rpts = new ShipReportList(shp);
 		Tracking trkg = new Tracking();
-		Iso8601Util iso = new Iso8601Util();
+
 		while (rpts.hasNext()) {
 			Report rpt = rpts.next();
-			System.out.println("" + counter++ + ": " + rpt);
-			wr.write("" + counter + ": " + rpt + '\n');
-			String geo = GeoHash.geoHashStringWithCharacterPrecision(rpt.u_latitude, rpt.u_longitude, 6);
-			GeoHash hsh = GeoHash.fromGeohashString(geo);
-			BoundingBox box = hsh.getBoundingBox();
-			box.getLatitudeSize();
-			float distanceLat = (float) VincentyGeodesy.distanceInMeters(
-					new WGS84Point(box.getMaxLat(), box.getMaxLon()), new WGS84Point(box.getMaxLat(), box.getMinLon()));
-			float distanceLon = (float) VincentyGeodesy.distanceInMeters(
-					new WGS84Point(box.getMaxLat(), box.getMaxLon()), new WGS84Point(box.getMinLat(), box.getMaxLon()));
-			String distance = "Lat*Lon: " + distanceLat + "*" + distanceLon;
-			wr.write("Geohash: " + geo + " latSize: " + box.getLatitudeSize() + " lonSize: " + box.getLongitudeSize()
-					+ " Distance M: " + distance + '\n');
-			trkg.addReport(rpt.u_latitude, rpt.u_longitude, iso.parseTime(rpt.dateAcquired));
+			// System.out.println("" + counter++ + ": " + rpt);
+			// wr.write( rpt.toString());
+			wr.write(JsonContext.mapper.writeValueAsString(rpt));
+			wr.write("\r\n");
+			// String geo =
+			// GeoHash.geoHashStringWithCharacterPrecision(rpt.u_latitude,
+			// rpt.u_longitude, 6);
+			// GeoHash hsh = GeoHash.fromGeohashString(geo);
+			// BoundingBox box = hsh.getBoundingBox();
+			// box.getLatitudeSize();
+			// float distanceLat = (float) VincentyGeodesy.distanceInMeters(
+			// new WGS84Point(box.getMaxLat(), box.getMaxLon()), new
+			// WGS84Point(box.getMaxLat(), box.getMinLon()));
+			// float distanceLon = (float) VincentyGeodesy.distanceInMeters(
+			// new WGS84Point(box.getMaxLat(), box.getMaxLon()), new
+			// WGS84Point(box.getMinLat(), box.getMaxLon()));
+			// String distance = "Lat*Lon: " + distanceLat + "*" + distanceLon;
+			// wr.write("Geohash: " + geo + " latSize: " + box.getLatitudeSize()
+			// + " lonSize: " + box.getLongitudeSize()
+			// + " Distance M: " + distance + '\n');
+			// trkg.addReport(rpt.u_latitude, rpt.u_longitude,
+			// iso.parseTime(rpt.dateAcquired));
 			wr.flush();
 			// break;
 			// System.out.print(rpt.dateAcquired);
@@ -96,8 +107,7 @@ public class ShipReportList extends Listing <Report>{
 			// long roughTime = iso.parseTime(rpt.dateAcquired) >>20;
 			// System.out.println("rough: "+iso.format(roughTime <<20));
 		}
-		wr.write('\n');
-		wr.write(trkg.toString());
+		// wr.write(trkg.toString());
 		wr.flush();
 		wr.close();
 		System.out.println(trkg);
