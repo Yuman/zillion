@@ -2,10 +2,6 @@ package com.yu;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.LinkedList;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,11 +13,6 @@ import com.yu.entity.Tracking;
 import com.yu.util.Iso8601Util;
 import com.yu.util.JsonContext;
 import com.yu.util.ZsConfig;
-
-import ch.hsr.geohash.BoundingBox;
-import ch.hsr.geohash.GeoHash;
-import ch.hsr.geohash.WGS84Point;
-import ch.hsr.geohash.util.VincentyGeodesy;
 
 public class ShipReportList extends Listing<Report> {
 	String PATH = "v1/shipments/reportdata";
@@ -48,10 +39,12 @@ public class ShipReportList extends Listing<Report> {
 		target = params.addToTarget(targetRoot);
 		target = target.queryParam("sign", params.sign("GET"));
 		System.out.println(target);
-		String RespStr = target.request(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+		String RespStr = target.request(MediaType.APPLICATION_JSON).get(String.class);
 		// System.out.println(RespStr);
-		// Response response = target.request(MediaType.TEXT_PLAIN_TYPE).get();
-		// System.out.println("response: " + response);
+		//Response response = target.request(MediaType.TEXT_PLAIN_TYPE).get();
+
+		//.out.println("response MediaType: " + response.getMediaType());
+		//System.out.println("response header: " + response.getHeaders());
 		// System.out.println("Ent from resp: " +
 		// response.readEntity(String.class));
 		ReportResponse resp = JsonContext.mapper.readValue(RespStr, ReportResponse.class);
@@ -70,10 +63,9 @@ public class ShipReportList extends Listing<Report> {
 		int counter = 0;
 		Shipment shp = new Shipment();
 		// 10281, 10297, 10298, 10299, 10300, 10301, 10302, 10303, 10364
-		shp.id = "10297";
-		Writer wr = new PrintWriter("/tmp/shipment" + shp.id + ".txt");
+		shp.id = "10300";
+		Writer wr = new PrintWriter("/tmp/shipmentRpts" + shp.id + ".txt");
 		ShipReportList rpts = new ShipReportList(shp);
-		Tracking trkg = new Tracking();
 
 		while (rpts.hasNext()) {
 			Report rpt = rpts.next();
@@ -110,7 +102,7 @@ public class ShipReportList extends Listing<Report> {
 		// wr.write(trkg.toString());
 		wr.flush();
 		wr.close();
-		System.out.println(trkg);
+		System.out.println(wr.toString());
 	}
 
 }

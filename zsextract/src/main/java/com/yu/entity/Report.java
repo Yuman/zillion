@@ -43,7 +43,7 @@ public class Report {
 	public float u_latitude;
 	public float u_longitude;
 	public String u_address;
-	public ArrayList<Alarm> data;
+	public ArrayList<Alarm> alarms;
 	@Override
 	public String toString() {
 		return "Report [clientId=" + clientId + ", clientName=" + clientName + ", deviceId=" + deviceId

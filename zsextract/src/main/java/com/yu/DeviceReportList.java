@@ -68,7 +68,7 @@ public class DeviceReportList extends Listing <Report> {
 		dev.tag = "010200036";
 		Writer wr = new PrintWriter("/tmp/dev" + dev.tag + ".txt");
 		DeviceReportList rpts = new DeviceReportList(dev);
-		Tracking trkg = new Tracking();
+		Tracking trkg = new Tracking("Device", dev.id + dev.tag);
 		Iso8601Util iso = new Iso8601Util();
 		while (rpts.hasNext()) {
 			Report rpt = rpts.next();
@@ -85,7 +85,7 @@ public class DeviceReportList extends Listing <Report> {
 			String distance = "Lat*Lon: " + distanceLat + "*" + distanceLon;
 			wr.write("Geohash: " + geo + " latSize: " + box.getLatitudeSize() + " lonSize: " + box.getLongitudeSize()
 					+ " Distance M: " + distance + '\n');
-			trkg.addReport(rpt.u_latitude, rpt.u_longitude, rpt.u_locationType, iso.parseTime(rpt.dateAcquired));
+			trkg.addReport(rpt.u_latitude, rpt.u_longitude, rpt.u_locationType, iso.parseTime(rpt.dateAcquired),rpt.alarms);
 
 			// break;
 			// System.out.print(rpt.dateAcquired);

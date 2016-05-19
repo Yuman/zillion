@@ -38,7 +38,7 @@ public class ShipmentDetail implements WsClient{
 		shipmentId = shipId;
 	}
 
-	void getReport() throws Exception {
+	String getReport() throws Exception {
 		Params params = new Params();
 		params.add("clientkey", ZsConfig.ClientKey);
 		params.add("_t", System.currentTimeMillis());
@@ -54,7 +54,7 @@ public class ShipmentDetail implements WsClient{
 		System.out.println("Ent from resp: " + response.readEntity(String.class));
 		ZsResponse resp = JsonContext.mapper.readValue(RespStr, ZsResponse.class);
 		System.out.println("response.status: " + resp.status);
-
+		return RespStr;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -62,7 +62,7 @@ public class ShipmentDetail implements WsClient{
 		Writer wr = new PrintWriter("/tmp/shipment" + 10297 + ".txt");
 		// 10281, 10297, 10298, 10299, 10300, 10301, 10302, 10303, 10364
 		ShipmentDetail rpt = new ShipmentDetail("10297");
-		rpt.getReport();
+		wr.append(rpt.getReport());
 		Iso8601Util iso = new Iso8601Util();
 
 		wr.write('\n');
