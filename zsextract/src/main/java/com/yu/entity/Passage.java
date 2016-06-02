@@ -15,6 +15,14 @@ public class Passage {
 	private int speedMperHR;
 	private int alarmCount = 0;
 
+	public void setAlarmCount(int alarmCount) {
+		this.alarmCount = alarmCount;
+	}
+
+	public int getAlarmCount() {
+		return alarmCount;
+	}
+
 	public int getSpeedMperHR() {
 		return speedMperHR;
 	}

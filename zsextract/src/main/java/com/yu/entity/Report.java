@@ -46,11 +46,11 @@ public class Report {
 	public ArrayList<Alarm> alarms;
 	@Override
 	public String toString() {
-		return "Report [clientId=" + clientId + ", clientName=" + clientName + ", deviceId=" + deviceId
-				+ ", deviceName=" + deviceName + ", dateAcquired=" + dateAcquired + ", dateReceived=" + dateReceived
-				+ ", u_deviceType=" + u_deviceType + ", u_tag=" + u_tag + ", u_wakeInterval=" + u_wakeInterval
-				+ ", u_signalStrength=" + u_signalStrength + ", u_locationType=" + u_locationType
-				+ ", u_communicationType=" + u_communicationType + ", u_latitude=" + u_latitude + ", u_longitude="
-				+ u_longitude + ", u_address=" + u_address + "]";
+		return "Report [dateAcquired=" + dateAcquired + ", u_tag=" + u_tag + ", u_temperature=" + u_temperature
+				+ ", u_humidity=" + u_humidity + ", u_light=" + u_light + ", u_pressure=" + u_pressure
+				+ ", u_acceleration=" + u_acceleration + ", u_locationType=" + u_locationType + ", u_latitude="
+				+ u_latitude + ", u_longitude=" + u_longitude + "]";
 	}
+
+
 }

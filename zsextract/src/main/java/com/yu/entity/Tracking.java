@@ -25,8 +25,8 @@ public class Tracking {
 	private long minTime, maxTime; // start and end times of tracking
 	private WGS84Point previousPoint;
 	private final String sourceType, id;
-	
-	public Tracking(String sourceType, String id){
+
+	public Tracking(String sourceType, String id) {
 		this.sourceType = sourceType;
 		this.id = id;
 	}
@@ -38,27 +38,28 @@ public class Tracking {
 			geo = psg.getGeoHash();
 		} else {
 			geo = GeoHash.geoHashStringWithCharacterPrecision(lat, lon, 5);
+			psg = compactGeo(geo);
 		}
 
 		if (psg == null || !psg.getGeoHash().equals(geo)) {// at the start or
 															// entering new
 															// place
-			psg = new Passage(geo);
-			WGS84Point currPoint = new WGS84Point(lat, lon);
-			if (previousPoint != null) { // not at starting point
-				int dist = (int) VincentyGeodesy.distanceInMeters(previousPoint, currPoint);
-				psg.setDistanceFromLast(dist);
+			Passage psgNew = new Passage(geo);
+			//WGS84Point currPoint = new WGS84Point(lat, lon);
+			if (psg != null) { // not at starting point
+				int dist = distanceBetween(psg.getGeoHash(), geo);
+				psgNew.setDistanceFromLast(dist);
 				long lastTime = track.peekLast().getLastTime();
 				double min = (time - lastTime) / 60000;
 				if (min > 2 && dist > 500) {
-					int speed = (int) (dist * 60 / min);
-					psg.setSpeedMperHR(speed);
-					// psg.setAddress(address);
+					int speed = (int) (dist * 60.0 / min);
+					psgNew.setSpeedMperHR(speed);
 				}
 			}
-			track.offerLast(psg);
-			previousPoint = currPoint;
+			track.offerLast(psgNew);
 		}
+
+		psg = track.peekLast(); // the tail may have changed.
 		psg.addReport(time); // staying in place
 		if (alarms != null) {
 			psg.addAlarms(alarms);
@@ -70,6 +71,27 @@ public class Tracking {
 		if (maxTime < time) {
 			maxTime = time;
 		}
+	}
+
+	private Passage compactGeo(String geo) {// handles the tailing
+											// A(p2)-B(p1)-A(p0) sequence
+		if (track.size() < 2) {
+			return track.peekLast();
+		}
+		Passage p1 = track.pollLast();
+		Passage p2 = track.peekLast();
+		if (geo.equals(p2.getGeoHash())) { // dropped p1
+			p2.setAlarmCount(p2.getAlarmCount() + p1.getAlarmCount());
+			return p2;
+		} else {
+			track.offerLast(p1);
+			return p1;
+		}
+	}
+
+	private int distanceBetween(String geo1, String geo2) {
+		return (int) VincentyGeodesy.distanceInMeters(GeoHash.fromGeohashString(geo1).getBoundingBoxCenterPoint(),
+				GeoHash.fromGeohashString(geo2).getBoundingBoxCenterPoint());
 	}
 
 	public int totalTimeHR() {
@@ -109,7 +131,8 @@ public class Tracking {
 	public String toString() {
 		Iso8601Util iso = new Iso8601Util();
 		StringBuilder sb = new StringBuilder();
-		sb.append("Tracking " + sourceType +  " " + id + ": \n");
+		sb.append("http://www.movable-type.co.uk/scripts/geohash.html\n");
+		sb.append("Tracking " + sourceType + " " + id + ": \n");
 		sb.append(iso.format(minTime));
 		sb.append("-->");
 		sb.append(iso.format(maxTime));

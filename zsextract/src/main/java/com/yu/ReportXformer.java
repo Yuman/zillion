@@ -24,7 +24,7 @@ public class ReportXformer {
 	public static void main(String[] args) throws Exception {
 		int shipId = 10297;
 		Tracking trkg = new Tracking("Shipment", String.valueOf(shipId));		
-		ReportReader rr = new ReportReader("/tmp/shipmentRpts" + shipId + ".txt");
+		ReportReader rr = new JsonReader("/tmp/shipmentRpts" + shipId + ".txt");
 		Writer wr = new PrintWriter("/tmp/track" + shipId + ".txt");
 		int counter = 1;
 		while (rr.hasNext()) {
