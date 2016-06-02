@@ -2,6 +2,9 @@ package com.yu;
 
 import java.io.FileReader;
 import java.io.Reader;
+import java.util.Deque;
+import java.util.LinkedList;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -9,11 +12,15 @@ import com.yu.entity.Report;
 
 public class CvsReader implements ReportReader{
 	private final Reader in;
-	private Iterable<CSVRecord> records;
+	private Deque<Report> reports = new LinkedList<Report>();
 	
 	public CvsReader(String filePath) throws Exception{
 		in = new FileReader(filePath);
-		records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+		Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+		for (CSVRecord rcd : records){
+			reports.offerFirst(convert(rcd));
+		}
+		in.close();
 	}
 	
 	
@@ -47,11 +54,11 @@ public class CvsReader implements ReportReader{
 
 
 	public boolean hasNext() {
-		return records.iterator().hasNext();
+		return !reports.isEmpty();
 	}
 
 	public Report next() throws Exception {		
-		return convert(records.iterator().next());
+		return reports.pollFirst();
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.yu.aggreg;
+package com.yu.stats;
 
 public class Stats {
 	private final String metric;

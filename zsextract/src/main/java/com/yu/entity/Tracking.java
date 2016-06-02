@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.yu.aggreg.Stats;
+import com.yu.stats.Stats;
 import com.yu.util.Iso8601Util;
 
 import ch.hsr.geohash.GeoHash;

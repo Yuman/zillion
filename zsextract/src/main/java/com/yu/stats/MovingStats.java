@@ -1,4 +1,4 @@
-package com.yu.aggreg;
+package com.yu.stats;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -67,10 +67,10 @@ public class MovingStats {
 
 	private Stability isNormal(long time, double startVar, double endVar, double mean, double measure) {
 		if (startVar <= 0 || endVar <= 0) {
-			return new Stability(time, false, false, mean, measure);
+			return new Stability(time, Measure.TEMPERATURE, false, false, mean, measure);
 		}
 		double bump = (measure - mean) / Math.sqrt(varSum / length);
-		return new Stability(time, bump > stabilityThreshold, bump < 0, mean, measure);
+		return new Stability(time, Measure.TEMPERATURE, bump > stabilityThreshold, bump < 0, mean, measure);
 	}
 
 	public long getTimeSpan() {

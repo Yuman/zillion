@@ -1,7 +1,7 @@
-package com.yu.aggreg;
+package com.yu.stats;
 
 public class Stability {	
-
+	private Measure measureType;
 	final boolean hasSurged;
 	final boolean hasDropped;
 	final long time;
@@ -28,7 +28,7 @@ public class Stability {
 		return time;
 	}
 
-	public Stability(long time, boolean hasSurged, boolean hasDropped, double mean, double measure) {
+	public Stability(long time, Measure measureType, boolean hasSurged, boolean hasDropped, double mean, double measure) {
 		this.time = time;
 		this.hasSurged = hasSurged;
 		this.hasDropped = hasDropped;
