@@ -3,6 +3,7 @@ package com.yu;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+import com.yu.entity.GeoStop;
 import com.yu.entity.Report;
 import com.yu.entity.Tracking;
 import com.yu.util.Iso8601Util;
@@ -31,7 +32,12 @@ public class ReportXformer {
 			Report rpt = rr.next();
 			System.out.println("" + counter++ + ": " + rpt);
 			String geo = GeoHash.geoHashStringWithCharacterPrecision(rpt.u_latitude, rpt.u_longitude, 5);
+			GeoStop stop = KnownGeoStops.findOne(geo);
+			if(stop != null){
+				System.out.println(stop.city);
+			}
 			GeoHash hsh = GeoHash.fromGeohashString(geo);
+			
 			BoundingBox box = hsh.getBoundingBox();
 			box.getLatitudeSize();
 			float distanceLat = (float) VincentyGeodesy.distanceInMeters(
@@ -39,8 +45,8 @@ public class ReportXformer {
 			float distanceLon = (float) VincentyGeodesy.distanceInMeters(
 					new WGS84Point(box.getMaxLat(), box.getMaxLon()), new WGS84Point(box.getMinLat(), box.getMaxLon()));
 			String distance = "Lat*Lon: " + distanceLat + "*" + distanceLon;
-			System.out.println("Geohash: " + geo + " latSize: " + box.getLatitudeSize() + " lonSize: " + box.getLongitudeSize()
-					+ " Distance M: " + distance + '\n');
+//			System.out.println("Geohash: " + geo + " latSize: " + box.getLatitudeSize() + " lonSize: " + box.getLongitudeSize()
+//					+ " Distance M: " + distance + '\n');
 			
 			trkg.addReport(rpt.u_latitude, rpt.u_longitude, rpt.u_locationType, iso.parseTime(rpt.dateAcquired), rpt.alarms);
 			wr.flush();

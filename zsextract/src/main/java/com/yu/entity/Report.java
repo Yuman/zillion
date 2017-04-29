@@ -38,7 +38,7 @@ public class Report {
 	public float u_accelerationY;
 	public float u_accelerationZ;
 	public int u_signalStrength;
-	public int u_locationType;
+	public int u_locationType = -1;
 	public int u_communicationType;
 	public float u_latitude;
 	public float u_longitude;

@@ -64,8 +64,8 @@ public class DeviceReportList extends Listing <Report> {
 	public static void main(String[] args) throws Exception {
 		int counter = 0;
 		Device dev = new Device();
-		dev.id = "335";
-		dev.tag = "010200036";
+		dev.id = "820";
+		dev.tag = "010200321";
 		Writer wr = new PrintWriter("/tmp/dev" + dev.tag + ".txt");
 		DeviceReportList rpts = new DeviceReportList(dev);
 		Tracking trkg = new Tracking("Device", dev.id + dev.tag);
