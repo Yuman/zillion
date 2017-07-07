@@ -34,7 +34,7 @@ public class Tracking {
 	public void addReport(double lat, double lon, int location_type, long time, List<Alarm> alarms) throws Exception {
 		String geo;
 		Passage psg = track.peekLast();
-		if (location_type == 0) {
+		if (location_type == 0 && psg != null) {
 			geo = psg.getGeoHash();
 		} else {
 			geo = GeoHash.geoHashStringWithCharacterPrecision(lat, lon, 5);
@@ -45,9 +45,9 @@ public class Tracking {
 															// entering new
 															// place
 			Passage psgNew = new Passage(geo);
-			//WGS84Point currPoint = new WGS84Point(lat, lon);
+			// WGS84Point currPoint = new WGS84Point(lat, lon);
 			if (psg != null) { // not at starting point
-				int dist = distanceBetween(psg.getGeoHash(), geo);
+				int dist = distanceInMeterBetween(psg.getGeoHash(), geo);
 				psgNew.setDistanceFromLast(dist);
 				long lastTime = track.peekLast().getLastTime();
 				double min = (time - lastTime) / 60000;
@@ -74,7 +74,10 @@ public class Tracking {
 	}
 
 	private Passage compactGeo(String geo) {// handles the tailing
-											// A(p2)-B(p1)-A(p0) sequence
+											// A(p2)-B(p1)-A(p0) sequence,
+											// inaccurate positioning
+											// causing swing between two
+											// geohashes
 		if (track.size() < 2) {
 			return track.peekLast();
 		}
@@ -82,6 +85,7 @@ public class Tracking {
 		Passage p2 = track.peekLast();
 		if (geo.equals(p2.getGeoHash())) { // dropped p1
 			p2.setAlarmCount(p2.getAlarmCount() + p1.getAlarmCount());
+			p2.mergeDuration(p1.getDurationMin());
 			return p2;
 		} else {
 			track.offerLast(p1);
@@ -89,7 +93,7 @@ public class Tracking {
 		}
 	}
 
-	private int distanceBetween(String geo1, String geo2) {
+	private int distanceInMeterBetween(String geo1, String geo2) {
 		return (int) VincentyGeodesy.distanceInMeters(GeoHash.fromGeohashString(geo1).getBoundingBoxCenterPoint(),
 				GeoHash.fromGeohashString(geo2).getBoundingBoxCenterPoint());
 	}
@@ -117,11 +121,10 @@ public class Tracking {
 	public Route learnRoute() {
 		// a route can't go backward
 		Route rt = new Route();
-		boolean extended;
 		iter = track.listIterator(iterCurrPos);
 		while (iter.hasNext()) {
 			Passage p = iter.next();
-			extended = rt.extend(new Cell(p.getGeoHash(), p.getDurationMin()));
+			rt.extend(new Cell(p.getGeoHash(), p.getDurationMin()));
 		}
 		iterCurrPos = iter.nextIndex();
 		return rt;
@@ -143,7 +146,7 @@ public class Tracking {
 		}
 		sb.append("Total Time (hr): " + totalTimeHR() + '\n');
 		sb.append("Total Dist (km): " + totalDistanceKM() + '\n');
-		sb.append("Max Speed (km/hr): " + speedStats().getMax() + '\n');
+		sb.append("Max Speed (km/hr): " + speedStats().getMax() / 1000 + '\n');
 		return sb.toString();
 	}
 

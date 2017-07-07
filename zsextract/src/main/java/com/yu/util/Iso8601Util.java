@@ -3,6 +3,7 @@ package com.yu.util;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -32,8 +33,8 @@ public class Iso8601Util {
 		return df.format(cal.getTime());
 	}
 	
-	public long parseTime(String dateTime) throws ParseException{
-		return df.parse(dateTime).getTime();
+	public static long parseTime(String dateTime) throws ParseException{
+		return OffsetDateTime.parse(dateTime).toEpochSecond()*1000;
 
 	}
 	
