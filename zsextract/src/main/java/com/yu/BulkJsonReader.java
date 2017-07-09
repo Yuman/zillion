@@ -61,7 +61,6 @@ public class BulkJsonReader implements ReportReader {
 	static void processFile(String dir, String file, String dirOut) throws Exception {
 		ReportReader rr = new BulkJsonReader(dir + "/" + file);
 		Tracking trkg = ReportXformer.processReports(rr, file);
-		//System.out.println(trkg);
 		FileWriter fw = new FileWriter(dirOut + "/" + file + ".txt");
 		fw.write(trkg.toString());
 		fw.close();

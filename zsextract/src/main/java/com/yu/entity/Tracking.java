@@ -1,6 +1,5 @@
 package com.yu.entity;
 
-import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -23,7 +22,6 @@ public class Tracking {
 	private ListIterator<Passage> iter;
 	private int iterCurrPos = 0;
 	private long minTime, maxTime; // start and end times of tracking
-	private WGS84Point previousPoint;
 	private final String sourceType, id;
 
 	public Tracking(String sourceType, String id) {
@@ -33,21 +31,26 @@ public class Tracking {
 
 	public void addReport(double lat, double lon, int location_type, long time, List<Alarm> alarms) throws Exception {
 		String geo;
-		Passage psg = track.peekLast();
-		if (location_type == 0 && psg != null) {
-			geo = psg.getGeoHash();
-		} else {
+		Passage lastPsg = track.peekLast();
+		if (location_type == 0 && lastPsg != null) { // no current position,
+			geo = lastPsg.getGeoHash(); // rolls back
+		} else if (location_type == 0 && lastPsg == null) { // starting with no
+															// position, nothing
+															// to do
+			return;
+		} else {// with position and not starting
 			geo = GeoHash.geoHashStringWithCharacterPrecision(lat, lon, 5);
-			psg = compactGeo(geo);
+			lastPsg = compactGeo(geo);
 		}
 
-		if (psg == null || !psg.getGeoHash().equals(geo)) {// at the start or
-															// entering new
-															// place
+		if (lastPsg == null || !lastPsg.getGeoHash().equals(geo)) {// at the
+																	// start or
+			// entering new
+			// place
 			Passage psgNew = new Passage(geo);
 			// WGS84Point currPoint = new WGS84Point(lat, lon);
-			if (psg != null) { // not at starting point
-				int dist = distanceInMeterBetween(psg.getGeoHash(), geo);
+			if (lastPsg != null) { // not at starting point
+				int dist = distanceInMeterBetween(lastPsg.getGeoHash(), geo);
 				psgNew.setDistanceFromLast(dist);
 				long lastTime = track.peekLast().getLastTime();
 				double min = (time - lastTime) / 60000;
@@ -59,10 +62,10 @@ public class Tracking {
 			track.offerLast(psgNew);
 		}
 
-		psg = track.peekLast(); // the tail may have changed.
-		psg.addReport(time); // staying in place
+		lastPsg = track.peekLast(); // the tail may have changed.
+		lastPsg.addReport(time); // update lastTime
 		if (alarms != null) {
-			psg.addAlarms(alarms);
+			lastPsg.addAlarms(alarms);
 		}
 
 		if (minTime == 0) {
@@ -73,24 +76,43 @@ public class Tracking {
 		}
 	}
 
+	/**
+	 * Compaction is needed when a non-moving device is near a border, or a
+	 * corner, and generates geopoints that, due to inaccuracy, fall in two or
+	 * three geohashes.
+	 */
 	private Passage compactGeo(String geo) {// handles the tailing
 											// A(p2)-B(p1)-A(p0) sequence,
 											// inaccurate positioning
 											// causing swing between two
 											// geohashes
-		if (track.size() < 2) {
+		if (track.size() < 3) {
 			return track.peekLast();
 		}
 		Passage p1 = track.pollLast();
-		Passage p2 = track.peekLast();
-		if (geo.equals(p2.getGeoHash())) { // dropped p1
+		Passage p2 = track.pollLast();
+		Passage p3 = track.peekLast();
+
+		// https://gis.stackexchange.com/questions/18330/using-geohash-for-proximity-searches
+		if (geo.equals(p2.getGeoHash())) { // dropping p1, A-B-A compacting into
+											// A
 			p2.setAlarmCount(p2.getAlarmCount() + p1.getAlarmCount());
 			p2.mergeDuration(p1.getDurationMin());
 			return p2;
+		} else if (geo.equals(p3.getGeoHash())) {// at corner, dropping p1 and
+													// p2
+			//A-B-C-A compacting into A
+			p3.setAlarmCount(p3.getAlarmCount() + p1.getAlarmCount());
+			p3.mergeDuration(p1.getDurationMin());
+			p3.setAlarmCount(p3.getAlarmCount() + p2.getAlarmCount());
+			p3.mergeDuration(p2.getDurationMin());
+			return p3;
 		} else {
+			track.offerLast(p2);
 			track.offerLast(p1);
 			return p1;
 		}
+
 	}
 
 	private int distanceInMeterBetween(String geo1, String geo2) {

@@ -15,10 +15,10 @@ import ch.hsr.geohash.GeoHash;
 public class KnownGeoStops {
 	private static HashMap<String, GeoStop> stops = new HashMap<String, GeoStop>();
 	static {load();}
-	public static void main(String[] args) throws IOException {
-
-		load ();
-	}
+//	public static void main(String[] args) throws IOException {
+//
+//		load ();
+//	}
 	
 	static void load() {
 		try {
